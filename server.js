@@ -1,5 +1,6 @@
 const express = require('express');
-const mysql = require('mysql2');
+const db = require('./db/connection');
+const apiRoutes = require('./routes/apiRoutes');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -8,30 +9,19 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// Connect to database
-const db = mysql.createConnection(
-  {
-    host: 'localhost',
-    // Your MySQL username,
-    user: 'root',
-    // Your MySQL password
-    password: 'MomsBday931962!',
-    database: 'election'
-  },
-  console.log('Connected to the election database.')
-);
-
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Hello World'
-  });
-});
+// Use apiRoutes
+app.use('/api', apiRoutes);
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
   res.status(404).end();
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Start server after DB connection
+db.connect(err => {
+  if (err) throw err;
+  console.log('Database connected.');
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 });
